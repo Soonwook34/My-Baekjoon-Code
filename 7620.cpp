@@ -40,12 +40,12 @@ int main() {
 			x = minX;
 			y = minY;
 		}
-		//추가(d)
+		//삭제(d)
 		else if (nextPlace == check[minX%1000][y]) {
 			edit.push_back(pair<char, char>('d', a[minX]));
 			x = minX;
 		}
-		//삭제(a)
+		//추가(a)
 		else {
 			edit.push_back(pair<char, char>('a', b[minY]));
 			y = minY;
