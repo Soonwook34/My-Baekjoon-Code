@@ -4,12 +4,19 @@
 #include <algorithm>
 using namespace std;
 
+#define WEST 1
+#define NORTH 2
+#define EAST 4
+#define SOUTH 8
+#define EXCEPT(I) 15-I					//I 벽을 제외한 나머지 벽의 합
+
 int countRoom(int, int);				//해당 칸과 이어져있는 방의 크기를 리턴하는 함수
 
 int n, m;
 int wall[50][50] = { 0, };				//지도 정보를 저장하는 배열
 bool is_visited[50][50] = { false, };	//해당 칸을 방문하였는지 저장하는 배열
 vector<int> room;						//방의 크기를 저장하는 vector
+
 
 int main() {
 	scanf("%d %d", &n, &m);
@@ -39,41 +46,23 @@ int main() {
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
 			//벽을 하나씩 제거하면서 방의 크기 세기
-			//서쪽에 벽이 있을 경우
-			if ((wall[i][j] & 1) != 0 && j != 0) {
-				wall[i][j] &= 14;
-				wall[i][j - 1] &= 11;
-				memset(is_visited, false, sizeof(is_visited));
-				room.push_back(countRoom(i, j));
-				wall[i][j] |= 1;
-				wall[i][j - 1] |= 4;
-			}
-			//북쪽에 벽이 있을 경우
-			if ((wall[i][j] & 2) != 0 && i != 0) {
-				wall[i][j] &= 13;
-				wall[i - 1][j] &= 7;
-				memset(is_visited, false, sizeof(is_visited));
-				room.push_back(countRoom(i, j));
-				wall[i][j] |= 2;
-				wall[i - 1][j] |= 8;
-			}
 			//동쪽에 벽이 있을 경우
-			if ((wall[i][j] & 4) != 0 && j != n - 1) {
-				wall[i][j] &= 11;
-				wall[i][j + 1] &= 14;
+			if ((wall[i][j] & EAST) != 0 && j != n - 1) {
+				wall[i][j] &= EXCEPT(EAST);
+				wall[i][j + 1] &= EXCEPT(WEST);
 				memset(is_visited, false, sizeof(is_visited));
 				room.push_back(countRoom(i, j));
-				wall[i][j] |= 4;
-				wall[i][j + 1] |= 1;
+				wall[i][j] |= EAST;
+				wall[i][j + 1] |= WEST;
 			}
 			//남쪽에 벽이 있을 경우
-			if ((wall[i][j] & 8) != 0 && i != m - 1) {
-				wall[i][j] &= 7;
-				wall[i + 1][j] &= 13;
+			if ((wall[i][j] & SOUTH) != 0 && i != m - 1) {
+				wall[i][j] &= EXCEPT(SOUTH);
+				wall[i + 1][j] &= EXCEPT(NORTH);
 				memset(is_visited, false, sizeof(is_visited));
 				room.push_back(countRoom(i, j));
-				wall[i][j] |= 8;
-				wall[i + 1][j] |= 2;
+				wall[i][j] |= SOUTH;
+				wall[i + 1][j] |= NORTH;
 			}
 		}
 	}
@@ -88,13 +77,13 @@ int countRoom(int x, int y) {
 
 	//벽이 없는 칸으로 탐색 이어가기
 	int size = 1;
-	if ((wall[x][y] & 1) == 0 && is_visited[x][y - 1] == false)	//서
+	if ((wall[x][y] & WEST) == 0 && is_visited[x][y - 1] == false)	//서
 		size += countRoom(x, y - 1);
-	if ((wall[x][y] & 2) == 0 && is_visited[x - 1][y] == false)	//북
+	if ((wall[x][y] & NORTH) == 0 && is_visited[x - 1][y] == false)	//북
 		size += countRoom(x - 1, y);
-	if ((wall[x][y] & 4) == 0 && is_visited[x][y + 1] == false)	//동
+	if ((wall[x][y] & EAST) == 0 && is_visited[x][y + 1] == false)	//동
 		size += countRoom(x, y + 1);
-	if ((wall[x][y] & 8) == 0 && is_visited[x + 1][y] == false)	//남
+	if ((wall[x][y] & SOUTH) == 0 && is_visited[x + 1][y] == false)	//남
 		size += countRoom(x + 1, y);
 
 	return size;
