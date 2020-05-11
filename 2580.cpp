@@ -1,13 +1,15 @@
-#include<iostream>
+#include <iostream>
+#include <cmath>
 using namespace std;
 
-int board[9][9];        //스도쿠 판
-bool Row[9][9];         //i열에 j가 쓰였는지 저장하는 Row[i][j]
-bool Col[9][9];         //i행에 j가 쓰였는지 저장하는 Col[i][j]
-bool Square[9][9];      //i번째 3*3칸에 j가 쓰였는지 저장하는 Square[i][j]
+int board[9][9] = { 0, };       //스도쿠 판
+int Row[9] = { 0, };            //i열에 쓰인 수를 비트로 저장하는 Row[i]
+int Col[9] = { 0, };            //i행에 쓰인 수를 비트로 저장하는 Col[i]
+int Square[9] = { 0, };         //i번째 3*3칸에 쓰인 수를 비트로 저장하는 Square[i]
+int bitNum[10] = { 0, 1, 2, 4, 8, 16, 32, 64, 128, 256 };   //비트 연산을 위한 변수
 
-void sudoku(int);       //스도쿠를 완성하는 함수
-void printSudoku();     //완성한 스도쿠를 출력하는 함수
+void makeSudoku(int);       //스도쿠를 완성하는 함수
+void printSudoku();         //완성한 스도쿠를 출력하는 함수
 
 int main() {
     //입력 받기
@@ -16,23 +18,24 @@ int main() {
             scanf("%d", &board[x][y]);
             if (board[x][y] != 0) {
                 //Row, Col, Square에 정보 저장
-                Row[x][board[x][y]] = true;
-                Col[y][board[x][y]] = true;
-                Square[(x / 3) * 3 + (y / 3)][board[x][y]] = true;
+                Row[x] |= bitNum[board[x][y]];
+                Col[y] |= bitNum[board[x][y]];
+                Square[(x / 3) * 3 + (y / 3)] |= bitNum[board[x][y]];
             }
         }
     }
+    makeSudoku(0);
 
-    sudoku(0);
-    
     return 0;
 }
 
-void sudoku(int cnt) {
+void makeSudoku(int cnt) {
+    //현재 위치 구하기
     int x = cnt / 9;
     int y = cnt % 9;
+    int square = (x / 3 * 3) + (y / 3);
 
-    //마지막 칸까지 다 채워졌으면 출력하고 종료
+    //마지막 칸까지 다 채워졌으면 출력하고 프로그램 종료
     if (cnt == 81) {
         printSudoku();
         exit(0);
@@ -42,22 +45,24 @@ void sudoku(int cnt) {
     if (board[x][y] == 0) {
         for (int i = 1; i <= 9; i++) {
             //해당 행과 열과 3*3칸에 i가 쓰이지 않았다면
-            if (!Row[x][i] && !Col[y][i] && !Square[(x / 3 * 3) + (y / 3)][i]) {
+            if (((Row[x] & bitNum[i]) == 0) && ((Col[y] & bitNum[i]) == 0) && ((Square[square] & bitNum[i]) == 0)) {
                 //i가 해당 칸에 쓰인다고 가정하고 저장
-                Row[x][i] = Col[y][i] = true;
-                Square[(x / 3 * 3) + (y / 3)][i] = true;
+                Row[x] |= bitNum[i];
+                Col[y] |= bitNum[i];
+                Square[square] |= bitNum[i];
                 board[x][y] = i;
                 //다음 칸으로 이동
-                sudoku(cnt + 1);
+                makeSudoku(cnt + 1);
                 //마지막 칸까지 가지 못하면(해당 가정이 틀렸을 경우) 정보 삭제
-                Row[x][i] = Col[y][i] = false;
+                Row[x] -= bitNum[i];
+                Col[y] -= bitNum[i];
+                Square[square] -= bitNum[i];
                 board[x][y] = 0;
-                Square[(x / 3 * 3) + (y / 3)][i] = false;
             }
         }
     }
     //채워진 칸이라면 다음 칸으로 이동
-    else sudoku(cnt + 1);
+    else makeSudoku(cnt + 1);
 
     return;
 }
