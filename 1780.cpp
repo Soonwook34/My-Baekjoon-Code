@@ -1,79 +1,59 @@
 #include <iostream>
-#include <vector>
+
 using namespace std;
 
 int N;
-int paper[2187][2187];
-int minusOne = 0, zero = 0, plusOne = 0;
-
-void makeQuadTree(int, int, int);	//쿼드 트리를 이용하여 colorPaper를 압축하는 함수
-bool isCompressible(int, int, int);	//해당 구역이 압축가능하면 true, 불가능하면 false를 리턴하는 함수
+int paper[2187][2187] = { 0, };
+int numCnt[3] = { 0, };
+void divide(int, int, int);
+bool isOkay(int, int, int);
 
 int main() {
-	cin >> N;
+	scanf("%d", &N);
+
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		for (int j = 0; j < N; j++)
 			scanf("%d", &paper[i][j]);
-		}
 	}
 
-	makeQuadTree(N, 0, 0);
+	divide(0, 0, N);
 
-	printf("%d\n%d\n%d\n", minusOne, zero, plusOne);
+	for (int i = 0; i < 3; i++) {
+		printf("%d\n", numCnt[i]);
+	}
 
 	return 0;
 }
 
-void makeQuadTree(int level, int x, int y) {
-	//가장 낮은 단계(1개)
-	if (level == 1) {
-		switch (paper[x][y]) {
-		case -1:
-		    minusOne++;
-		    break;
-		case 0:
-			zero++;
-			break;
-		case 1:
-			plusOne++;
-			break;
-		}
+void divide(int x, int y, int size) {
+	if (size == 1) {
+		numCnt[paper[x][y] + 1]++;
 		return;
 	}
-	//압축 가능하면 압축정보 저장
-	if (isCompressible(level, x, y)) {
-		switch (paper[x][y]) {
-		case -1:
-		    minusOne++;
-		    break;
-		case 0:
-			zero++;
-			break;
-		case 1:
-			plusOne++;
-			break;
-		}
+
+	if (isOkay(x, y, size)) {
+		numCnt[paper[x][y] + 1]++;
+		return;
 	}
-	//불가능하면 9분할 하여 압축 시도
 	else {
-		makeQuadTree(level / 3, x, y);
-		makeQuadTree(level / 3, x, y + (level / 3));
-		makeQuadTree(level / 3, x, y + (level / 3 * 2));
-		makeQuadTree(level / 3, x + (level / 3), y);
-		makeQuadTree(level / 3, x + (level / 3), y + (level / 3));
-		makeQuadTree(level / 3, x + (level / 3), y + (level / 3 * 2));
-		makeQuadTree(level / 3, x + (level / 3 * 2), y);
-		makeQuadTree(level / 3, x + (level / 3 * 2), y + (level / 3));
-		makeQuadTree(level / 3, x + (level / 3 * 2), y + (level / 3 * 2));
+		size /= 3;
+		divide(x, y, size);
+		divide(x, y + size, size);
+		divide(x, y + size * 2, size);
+		divide(x + size, y, size);
+		divide(x + size, y + size, size);
+		divide(x + size, y + size * 2, size);
+		divide(x + size * 2, y, size);
+		divide(x + size * 2, y + size, size);
+		divide(x + size * 2, y + size * 2, size);
 	}
 }
 
-bool isCompressible(int level, int x, int y) {
-	int check = paper[x][y];	//첫 색 확인
-	//해당 구역이 전부 같은 색인지 확인
-	for (int i = 0; i < level; i++) {
-		for (int j = 0; j < level; j++) {
-			if (paper[x + i][y + j] != check)
+bool isOkay(int x, int y, int size) {
+	int num = paper[x][y];
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			if (paper[x + i][y + j] != num)
 				return false;
 		}
 	}
