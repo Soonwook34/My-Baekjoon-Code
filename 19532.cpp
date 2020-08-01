@@ -21,7 +21,6 @@ int main() {
       if (isFound)
          break;
    }
-
    printf("%d %d\n", X, Y);
 
    return 0;
